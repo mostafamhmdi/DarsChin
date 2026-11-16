@@ -90,6 +90,33 @@ def hard_course_conflicts(ctx: MilpContext) -> None:
             if la and lb:
                 ctx.solver.Add(ctx.solver.Sum(la + lb) <= 1)
 
+def term_no_overlap(ctx: MilpContext) -> None:
+    if not _on(ctx, "term_no_overlap"):
+        return
+    p = ctx.problem
+    
+    # گروه‌بندی ایندکس کلاس‌ها بر اساس ترم
+    term_groups = {}
+    for c in p.courses:
+        term = getattr(c, "term", None)  # در صورتی که ترم تنظیم شده باشد
+        if term:
+            term_groups.setdefault(term, []).append(c.idx)
+            
+    for term, course_idxs in term_groups.items():
+        # استخراج تمام نشست‌ها (sessions) مربوط به دروس این ترم
+        term_sessions = []
+        for c_idx in course_idxs:
+            term_sessions.extend(p.sessions_of_course.get(c_idx, []))
+            
+        if len(term_sessions) < 2:
+            continue
+            
+        # در هیچ اسلاتی نباید بیشتر از یک نشست از این ترم برگزار شود
+        for slot in p.slots:
+            lits = ctx.lits_at_slot(term_sessions, slot.idx)
+            if len(lits) > 1:
+                ctx.solver.Add(ctx.solver.Sum(lits) <= 1)
+
 
 ALL = [one_placement_per_session, distinct_days, symmetry_breaking,
-       teacher_no_overlap, teacher_daily_load, hard_course_conflicts]
+       teacher_no_overlap, teacher_daily_load, hard_course_conflicts, term_no_overlap]

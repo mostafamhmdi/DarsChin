@@ -73,8 +73,8 @@ class Course:
     minutes: int
     level: Level
     major: str
-
-
+    term: str | None = None  
+    
 @dataclass(frozen=True)
 class Session:
     idx: int
@@ -149,7 +149,7 @@ def build_problem(req: SolveRequest) -> Problem:
     t_idx = {t.id: t.idx for t in teachers}
     courses = [
         Course(i, c.id, c.name, t_idx[c.teacher_id], c.sessions_per_week,
-               c.session_minutes, c.level, c.major)
+               c.session_minutes, c.level, c.major, c.term)
         for i, c in enumerate(req.courses)
     ]
     c_idx = {c.id: c.idx for c in courses}

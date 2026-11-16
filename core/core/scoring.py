@@ -10,6 +10,7 @@ objective modules of the engines:
     course_spread         w                                 per pair of back-to-back days of a course
     slot_quality          w * priority * slot penalty       per placed session
     soft_course_conflicts w * max(1, min//30)               per overlapping slot of a soft conflict
+    total_days            w                                 per distinct active day in the whole schedule # اضافه شد
 
 `active_weights` is shared with engines that need weights (CSP) so "disabled_modules" and
 "weight = 0" mean the same thing everywhere.
@@ -21,7 +22,8 @@ from collections import defaultdict
 from .preprocess import Problem
 from .evaluation import Resolved
 
-OBJECTIVE_NAMES = ("teacher_days", "teacher_gaps", "course_spread", "slot_quality", "soft_course_conflicts")
+# total_days به لیست نام‌ها اضافه شد
+OBJECTIVE_NAMES = ("teacher_days", "teacher_gaps", "course_spread", "slot_quality", "soft_course_conflicts", "total_days")
 
 
 def active_weights(problem: Problem) -> dict[str, int]:
@@ -32,6 +34,8 @@ def active_weights(problem: Problem) -> dict[str, int]:
         "course_spread": w.course_spread,
         "slot_quality": w.slot_quality,
         "soft_course_conflicts": w.soft_conflict,
+        # استفاده از getattr تا در صورت نبود فیلد در کلاس کانفیگ ارور ندهد
+        "total_days": getattr(w, "total_days", 0), 
     }
     disabled = set(problem.config.disabled_modules)
     return {k: (0 if k in disabled else v) for k, v in raw.items()}
@@ -53,6 +57,9 @@ def score(problem: Problem, resolved: Resolved) -> tuple[int, dict[str, int]]:
     occ: dict[tuple[int, int], set[int]] = defaultdict(set)
     course_days: dict[int, set[int]] = defaultdict(set)
     course_slots: dict[int, set[int]] = defaultdict(set)
+    
+    # متغیری برای ذخیره تمام روزهایی که در کل برنامه پر شده‌اند
+    active_days: set[int] = set()
 
     for sess, pl in resolved:
         c = problem.courses[sess.course_idx]
@@ -60,6 +67,10 @@ def score(problem: Problem, resolved: Resolved) -> tuple[int, dict[str, int]]:
         occ[(c.teacher_idx, pl.day)].update(problem.slots[i].order for i in pl.slot_idxs)
         course_days[c.idx].add(pl.day)
         course_slots[c.idx].update(pl.slot_idxs)
+        
+        # ثبت روز برای قید total_days
+        active_days.add(pl.day)
+
         if "slot_quality" in br:
             br["slot_quality"] += w["slot_quality"] * prio * pl.penalty
 
@@ -82,5 +93,9 @@ def score(problem: Problem, resolved: Resolved) -> tuple[int, dict[str, int]]:
                 continue
             for i in course_slots[cf.a] & course_slots[cf.b]:
                 br["soft_course_conflicts"] += w["soft_course_conflicts"] * max(1, problem.slots[i].minutes // 30)
+
+    # اعمال جریمه کل روزهای درگیر در صورت فعال بودن
+    if "total_days" in br:
+        br["total_days"] += w["total_days"] * len(active_days)
 
     return sum(br.values()), br

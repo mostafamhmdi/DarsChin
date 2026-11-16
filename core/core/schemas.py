@@ -79,6 +79,7 @@ class CourseIn(_Base):
     session_hours: float = Field(gt=0, le=8, description="duration of EACH session, e.g. 2 or 1.5")
     level: Level
     major: str
+    term: str | None = Field(default=None) # <--- این فیلد اضافه شد
 
     @property
     def session_minutes(self) -> int:
@@ -98,7 +99,7 @@ class Weights(_Base):
     course_spread: int = Field(5, ge=0)
     slot_quality: int = Field(1, ge=0)
     soft_conflict: int = Field(20, ge=0)
-
+    total_days: int = Field(10, ge=0) # <--- این فیلد اضافه شد
 
 class SolverConfig(_Base):
     engine: str = Field("cpsat", description="cpsat | milp | csp (see GET /v1/engines)")

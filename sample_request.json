@@ -1,0 +1,468 @@
+{
+  "teachers": [
+    {
+      "id": "T1",
+      "name": "Mahdian",
+      "available_days": [
+        0,
+        1,
+        3
+      ],
+      "priority": 5
+    },
+    {
+      "id": "T2",
+      "name": "Jafariani",
+      "available_days": [
+        0,
+        1,
+        3
+      ],
+      "priority": 5
+    },
+    {
+      "id": "T6",
+      "name": "Poursadegh",
+      "available_days": [
+        1,
+        2,
+        3
+      ],
+      "priority": 3
+    },
+    {
+      "id": "T3",
+      "name": "Sadeghi",
+      "available_days": [
+        1,
+        2,
+        3
+      ],
+      "priority": 3
+    },
+    {
+      "id": "T5",
+      "name": "Askari",
+      "available_days": [
+        1,
+        2,  
+        3 
+      ],
+      "priority": 3
+    },
+    {
+      "id": "T4",
+      "name": "Moradi",
+      "available_days": [
+        0,
+        1,
+        3
+      ],
+      "priority": 3
+    }
+  ],
+  "courses": [
+    {
+      "id": "C1",
+      "name": "ML",
+      "teacher_id": "T1",
+      "sessions_per_week": 2,
+      "session_hours": 2,
+      "term": "Term1",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C2",
+      "name": "Adv DL",
+      "teacher_id": "T1",
+      "sessions_per_week": 2,
+      "session_hours": 2,
+      "term": "Term3",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C3",
+      "name": "random process",
+      "teacher_id": "T2",
+      "sessions_per_week": 2,
+      "session_hours": 2,
+      "term": "Term1",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C4",
+      "name": "Adv NLP",
+      "teacher_id": "T2",
+      "sessions_per_week": 2,
+      "session_hours": 2,
+      "term": "Term3",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C5",
+      "name": "Language",
+      "teacher_id": "T3",
+      "sessions_per_week": 1,
+      "session_hours": 2,
+      "term": "Term3",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C6",
+      "name": "Audio processing",
+      "teacher_id": "T3",
+      "sessions_per_week": 2,
+      "session_hours": 2,
+      "term": "Term1",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C7",
+      "name": "TV",
+      "teacher_id": "T4",
+      "sessions_per_week": 1,
+      "session_hours": 3,
+      "term": "Term3",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C8",
+      "name": "DSP",
+      "teacher_id": "T5",
+      "sessions_per_week": 1,
+      "session_hours": 3,
+      "term": "Term1",
+      "level": "master",
+      "major": "CE"
+    },
+    {
+      "id": "C9",
+      "name": "Audio basics",
+      "teacher_id": "T6",
+      "sessions_per_week": 1,
+      "session_hours": 3,
+      "term": "Term1",
+      "level": "master",
+      "major": "CE"
+    }
+  ],
+  "slots": [
+    {
+      "id": "d0_08",
+      "day": 0,
+      "start": "08:00",
+      "end": "09:00",
+      "penalty": 2
+    },
+    {
+      "id": "d0_09",
+      "day": 0,
+      "start": "09:00",
+      "end": "10:00",
+      "penalty": 0
+    },
+    {
+      "id": "d0_10",
+      "day": 0,
+      "start": "10:00",
+      "end": "11:00",
+      "penalty": 0
+    },
+    {
+      "id": "d0_11",
+      "day": 0,
+      "start": "11:00",
+      "end": "12:00",
+      "penalty": 1
+    },
+    {
+      "id": "d0_14",
+      "day": 0,
+      "start": "14:00",
+      "end": "15:00",
+      "penalty": 1
+    },
+    {
+      "id": "d0_15",
+      "day": 0,
+      "start": "15:00",
+      "end": "16:00",
+      "penalty": 1
+    },
+    {
+      "id": "d0_16",
+      "day": 0,
+      "start": "16:00",
+      "end": "17:00",
+      "penalty": 2
+    },
+    {
+      "id": "d0_17",
+      "day": 0,
+      "start": "17:00",
+      "end": "18:00",
+      "penalty": 3
+    },
+    {
+      "id": "d1_08",
+      "day": 1,
+      "start": "08:00",
+      "end": "09:00",
+      "penalty": 2
+    },
+    {
+      "id": "d1_09",
+      "day": 1,
+      "start": "09:00",
+      "end": "10:00",
+      "penalty": 0
+    },
+    {
+      "id": "d1_10",
+      "day": 1,
+      "start": "10:00",
+      "end": "11:00",
+      "penalty": 0
+    },
+    {
+      "id": "d1_11",
+      "day": 1,
+      "start": "11:00",
+      "end": "12:00",
+      "penalty": 1
+    },
+    {
+      "id": "d1_14",
+      "day": 1,
+      "start": "14:00",
+      "end": "15:00",
+      "penalty": 1
+    },
+    {
+      "id": "d1_15",
+      "day": 1,
+      "start": "15:00",
+      "end": "16:00",
+      "penalty": 1
+    },
+    {
+      "id": "d1_16",
+      "day": 1,
+      "start": "16:00",
+      "end": "17:00",
+      "penalty": 2
+    },
+    {
+      "id": "d1_17",
+      "day": 1,
+      "start": "17:00",
+      "end": "18:00",
+      "penalty": 3
+    },
+    {
+      "id": "d2_08",
+      "day": 2,
+      "start": "08:00",
+      "end": "09:00",
+      "penalty": 2
+    },
+    {
+      "id": "d2_09",
+      "day": 2,
+      "start": "09:00",
+      "end": "10:00",
+      "penalty": 0
+    },
+    {
+      "id": "d2_10",
+      "day": 2,
+      "start": "10:00",
+      "end": "11:00",
+      "penalty": 0
+    },
+    {
+      "id": "d2_11",
+      "day": 2,
+      "start": "11:00",
+      "end": "12:00",
+      "penalty": 1
+    },
+    {
+      "id": "d2_14",
+      "day": 2,
+      "start": "14:00",
+      "end": "15:00",
+      "penalty": 1
+    },
+    {
+      "id": "d2_15",
+      "day": 2,
+      "start": "15:00",
+      "end": "16:00",
+      "penalty": 1
+    },
+    {
+      "id": "d2_16",
+      "day": 2,
+      "start": "16:00",
+      "end": "17:00",
+      "penalty": 2
+    },
+    {
+      "id": "d2_17",
+      "day": 2,
+      "start": "17:00",
+      "end": "18:00",
+      "penalty": 3
+    },
+    {
+      "id": "d3_08",
+      "day": 3,
+      "start": "08:00",
+      "end": "09:00",
+      "penalty": 2
+    },
+    {
+      "id": "d3_09",
+      "day": 3,
+      "start": "09:00",
+      "end": "10:00",
+      "penalty": 0
+    },
+    {
+      "id": "d3_10",
+      "day": 3,
+      "start": "10:00",
+      "end": "11:00",
+      "penalty": 0
+    },
+    {
+      "id": "d3_11",
+      "day": 3,
+      "start": "11:00",
+      "end": "12:00",
+      "penalty": 1
+    },
+    {
+      "id": "d3_14",
+      "day": 3,
+      "start": "14:00",
+      "end": "15:00",
+      "penalty": 1
+    },
+    {
+      "id": "d3_15",
+      "day": 3,
+      "start": "15:00",
+      "end": "16:00",
+      "penalty": 1
+    },
+    {
+      "id": "d3_16",
+      "day": 3,
+      "start": "16:00",
+      "end": "17:00",
+      "penalty": 2
+    },
+    {
+      "id": "d3_17",
+      "day": 3,
+      "start": "17:00",
+      "end": "18:00",
+      "penalty": 3
+    },
+    {
+      "id": "d4_08",
+      "day": 4,
+      "start": "08:00",
+      "end": "09:00",
+      "penalty": 2
+    },
+    {
+      "id": "d4_09",
+      "day": 4,
+      "start": "09:00",
+      "end": "10:00",
+      "penalty": 0
+    },
+    {
+      "id": "d4_10",
+      "day": 4,
+      "start": "10:00",
+      "end": "11:00",
+      "penalty": 0
+    },
+    {
+      "id": "d4_11",
+      "day": 4,
+      "start": "11:00",
+      "end": "12:00",
+      "penalty": 1
+    },
+    {
+      "id": "d4_14",
+      "day": 4,
+      "start": "14:00",
+      "end": "15:00",
+      "penalty": 1
+    },
+    {
+      "id": "d4_15",
+      "day": 4,
+      "start": "15:00",
+      "end": "16:00",
+      "penalty": 1
+    },
+    {
+      "id": "d4_16",
+      "day": 4,
+      "start": "16:00",
+      "end": "17:00",
+      "penalty": 2
+    },
+    {
+      "id": "d4_17",
+      "day": 4,
+      "start": "17:00",
+      "end": "18:00",
+      "penalty": 3
+    }
+  ],
+  "conflicts": [
+    {
+      "course_a": "C1",
+      "course_b": "C4"
+    },
+    {
+      "course_a": "C1",
+      "course_b": "C5"
+    },
+    {
+      "course_a": "C1",
+      "course_b": "C7"
+    },
+    {
+      "course_a": "C2",
+      "course_b": "C3"
+    },
+    {
+      "course_a": "C3",
+      "course_b": "C5"
+    },
+    {
+      "course_a": "C3",
+      "course_b": "C7"
+    }
+  ],
+  "config": {
+    "time_limit_sec": 30,
+    "num_workers": 8
+  }
+}

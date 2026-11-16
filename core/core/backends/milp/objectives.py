@@ -92,13 +92,22 @@ def soft_course_conflicts(ctx: MilpContext, w: int) -> None:
                 S.Add(o >= S.Sum(la) + S.Sum(lb) - 1)
                 ctx.penalty(w * max(1, slot.minutes // 30), o)
 
+def total_days(ctx: MilpContext, w: int) -> None:
+    p = ctx.problem
+    all_sessions = [s.idx for s in p.sessions]
+    for day in p.slots_by_day:
+        lits = ctx.lits_on_day(all_sessions, day)
+        # متغیر used در صورتی که حداقل یک کلاس در این روز باشد 1 می‌شود
+        used = ctx.or_lower(lits, f"global_day_{day}")
+        ctx.penalty(w, used)
+
 
 ALL = {"teacher_days": teacher_days, "teacher_gaps": teacher_gaps, "course_spread": course_spread,
-       "slot_quality": slot_quality, "soft_course_conflicts": soft_course_conflicts}
+       "slot_quality": slot_quality, "soft_course_conflicts": soft_course_conflicts, "total_days": total_days}
 
 
 def apply_all(ctx: MilpContext) -> None:
-    weights = active_weights(ctx.problem)
+    weights = active_weights(ctx.problem)   
     for name, fn in ALL.items():
         if weights[name] > 0:
             fn(ctx, weights[name])
