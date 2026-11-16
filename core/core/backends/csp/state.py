@@ -39,6 +39,7 @@ class CspState:
         self.tday: dict[tuple[int, int], int] = defaultdict(int)
         self.tocc: dict[tuple[int, int], int] = defaultdict(int)
         self.cday: dict[tuple[int, int], int] = defaultdict(int)
+        self.global_day: dict[int, int] = defaultdict(int)
         self.load: dict[tuple[int, int], int] = defaultdict(int)
         self.mono = 0
         self.gap = 0
@@ -65,6 +66,8 @@ class CspState:
         m, w = self.m, self.m.w
         t, c, d, prio = m.teacher[s], m.course[s], p.day, m.prio[s]
         cost = w["slot_quality"] * prio * p.penalty
+        if w.get("total_days") and self.global_day[d] == 0:  
+            cost += w["total_days"]
         if self.tday[(t, d)] == 0:
             cost += w["teacher_days"] * prio
         if w["course_spread"] and len(m.sessions_of_course[c]) >= 2 and self.cday[(c, d)] == 0:
@@ -104,9 +107,11 @@ class CspState:
         self.tocc[key] |= p.pmask
         self.tday[key] += 1
         self.cday[(c, d)] += 1
+        self.global_day[d] += 1
         self.load[key] += p.minutes
         self.asg[s] = p
         self.n_assigned += 1
+        
 
         for n, rel in m.neighbors[s]:
             if self.asg[n] is not None:
@@ -142,6 +147,7 @@ class CspState:
         self.tocc[key] = self._old_occ.pop(s)
         self.tday[key] -= 1
         self.cday[(c, d)] -= 1
+        self.global_day[d] -= 1
         self.load[key] -= p.minutes
         self.asg[s] = None
         self.n_assigned -= 1

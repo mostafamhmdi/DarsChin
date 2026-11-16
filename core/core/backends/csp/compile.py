@@ -80,6 +80,19 @@ def compile_problem(p: Problem) -> CspModel:
                     for b in p.sessions_of_course[cf.b]:
                         rel[(a, b)] |= DISJOINT
                         rel[(b, a)] |= DISJOINT
+    if "term_no_overlap" not in off:
+        term_groups = defaultdict(list)
+        for c in p.courses:
+            term = getattr(c, "term", None)
+            if term:
+                term_groups[term].append(c.idx)
+        for course_idxs in term_groups.values():
+            for i, ca in enumerate(course_idxs):
+                for cb in course_idxs[i + 1:]:
+                    for a in p.sessions_of_course[ca]:
+                        for b in p.sessions_of_course[cb]:
+                            rel[(a, b)] |= DISJOINT
+                            rel[(b, a)] |= DISJOINT                   
     distinct = cfg.sessions_on_distinct_days and "course_sessions_distinct_days" not in off
     ordered = "session_symmetry_breaking" not in off
     for sess in p.sessions_of_course.values():

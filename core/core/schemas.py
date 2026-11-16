@@ -99,7 +99,7 @@ class Weights(_Base):
     course_spread: int = Field(5, ge=0)
     slot_quality: int = Field(1, ge=0)
     soft_conflict: int = Field(20, ge=0)
-    total_days: int = Field(10, ge=0) # <--- این فیلد اضافه شد
+    total_days: int = Field(5, ge=0) # <--- این فیلد اضافه شد
 
 class SolverConfig(_Base):
     engine: str = Field("cpsat", description="cpsat | milp | csp (see GET /v1/engines)")
