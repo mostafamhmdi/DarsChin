@@ -1,4 +1,4 @@
-"""python run_example.py [path/to/request.json]  -> prints the timetable and KPIs."""
+
 import json
 import sys
 from collections import defaultdict
@@ -7,6 +7,10 @@ from core import SolveRequest, solve_schedule
 
 path = sys.argv[1] if len(sys.argv) > 1 else "sample_request.json"
 req = SolveRequest.model_validate_json(open(path, encoding="utf-8").read())
+
+req.config.engine = "cpsat"  # یا "milp" یا "csp"
+# ----------------------------------------------------
+
 res = solve_schedule(req)
 
 print("status:", res.status.value, "| objective:", res.objective, "| bound:", res.best_bound, "| time:", res.solve_time_sec)
