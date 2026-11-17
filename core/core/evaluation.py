@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from .preprocess import Placement, Problem, Session
+from .preprocess import Placement, Problem, Session, term_groups
 
 Resolved = list[tuple[Session, Placement]]
 
@@ -60,6 +60,11 @@ def verify(problem: Problem, resolved: Resolved) -> list[str]:
             for sl in problem.slots:
                 if course_slots.get((cf.a, sl.idx)) and course_slots.get((cf.b, sl.idx)):
                     errs.append(f"hard conflict {problem.courses[cf.a].id}|{problem.courses[cf.b].id} at {sl.id}")
+    if "term_no_overlap" not in cfg.disabled_modules:      # students of one term cannot be in two classes at once
+        for term, cidx in term_groups(problem).items():
+            for sl in problem.slots:
+                if sum(course_slots.get((c, sl.idx), 0) for c in cidx) > 1:
+                    errs.append(f"term {term}: two courses overlap at slot {sl.id}")
     return errs
 
 
@@ -90,7 +95,13 @@ def compute_metrics(problem: Problem, resolved: Resolved) -> dict:
         }
 
     all_days = sorted({pl.day for _, pl in resolved})
+    terms = {}
+    for term, cidx in term_groups(problem).items():
+        cs = set(cidx)
+        days = sorted({pl.day for sess, pl in resolved if sess.course_idx in cs})
+        terms[term] = {"days": days, "days_count": len(days)}
     return {
+        "terms": terms,
         "teachers": teachers,
         "days_used_overall": all_days,
         "total_gap_hours": round(sum(t["gap_hours"] for t in teachers.values()), 2),

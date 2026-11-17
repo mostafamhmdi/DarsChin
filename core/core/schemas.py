@@ -80,6 +80,8 @@ class CourseIn(_Base):
     level: Level
     major: str
     term: str | None = Field(default=None) # <--- این فیلد اضافه شد
+    weight: int = Field(1, ge=0, le=10,
+                        description="importance of the course; higher -> placed EARLIER in the day. 0 = no time-of-day preference")
 
     @property
     def session_minutes(self) -> int:
@@ -100,6 +102,8 @@ class Weights(_Base):
     slot_quality: int = Field(1, ge=0)
     soft_conflict: int = Field(20, ge=0)
     total_days: int = Field(5, ge=0) # <--- این فیلد اضافه شد
+    course_earliness: int = Field(1, ge=0, description="cost per 30 min of lateness, times course.weight")
+    term_days: int = Field(30, ge=0, description="cost per (term, day): students of one term should come on few days")
 
 class SolverConfig(_Base):
     engine: str = Field("cpsat", description="cpsat | milp | csp (see GET /v1/engines)")

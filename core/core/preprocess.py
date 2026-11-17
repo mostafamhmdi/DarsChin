@@ -73,7 +73,8 @@ class Course:
     minutes: int
     level: Level
     major: str
-    term: str | None = None  
+    term: str | None = None
+    weight: int = 1          # 0..10; higher -> earlier in the day (objective course_earliness)
     
 @dataclass(frozen=True)
 class Session:
@@ -101,6 +102,20 @@ class Problem:
     placements: dict[int, list[Placement]]                 # session idx -> legal placements
     sessions_of_course: dict[int, list[int]] = field(default_factory=dict)
     sessions_of_teacher: dict[int, list[int]] = field(default_factory=dict)
+
+
+def term_groups(p: Problem) -> dict[str, list[int]]:
+    """
+    term label -> idx of its courses (courses without a term belong to no group).
+
+    Single source of truth for "students of the same term", shared by the term_no_overlap
+    constraint, the term_days objective, the verifier and the scorer.
+    """
+    groups: dict[str, list[int]] = {}
+    for c in p.courses:
+        if c.term:
+            groups.setdefault(c.term, []).append(c.idx)
+    return groups
 
 
 def _generate_placements(slots: list[Slot], slots_by_day: dict[int, list[int]], minutes: int) -> list[Placement]:
@@ -149,7 +164,7 @@ def build_problem(req: SolveRequest) -> Problem:
     t_idx = {t.id: t.idx for t in teachers}
     courses = [
         Course(i, c.id, c.name, t_idx[c.teacher_id], c.sessions_per_week,
-               c.session_minutes, c.level, c.major, c.term)
+               c.session_minutes, c.level, c.major, c.term, c.weight)
         for i, c in enumerate(req.courses)
     ]
     c_idx = {c.id: c.idx for c in courses}

@@ -8,11 +8,12 @@ from core import SolveRequest, solve_schedule
 path = sys.argv[1] if len(sys.argv) > 1 else "sample_request.json"
 req = SolveRequest.model_validate_json(open(path, encoding="utf-8").read())
 
-req.config.engine = "csp"  # یا "milp" یا "csp"
+req.config.engine = "milp"  # یا "milp" یا "csp"
 # ----------------------------------------------------
 
 res = solve_schedule(req)
 
+print("\n\n=== SOLUTION ===")
 print("status:", res.status.value, "| objective:", res.objective, "| bound:", res.best_bound, "| time:", res.solve_time_sec)
 for i in res.issues:
     print(f"[{i.severity}] {i.code}: {i.message}")

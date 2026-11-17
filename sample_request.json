@@ -69,6 +69,7 @@
       "sessions_per_week": 2,
       "session_hours": 2,
       "term": "Term1",
+      "weight":10,
       "level": "master",
       "major": "CE"
     },
@@ -79,6 +80,7 @@
       "sessions_per_week": 2,
       "session_hours": 2,
       "term": "Term3",
+      "weight":10,
       "level": "master",
       "major": "CE"
     },
@@ -89,6 +91,7 @@
       "sessions_per_week": 2,
       "session_hours": 2,
       "term": "Term1",
+      "weight":8,
       "level": "master",
       "major": "CE"
     },
@@ -99,6 +102,7 @@
       "sessions_per_week": 2,
       "session_hours": 2,
       "term": "Term3",
+      "weight":10,
       "level": "master",
       "major": "CE"
     },
@@ -109,6 +113,7 @@
       "sessions_per_week": 1,
       "session_hours": 2,
       "term": "Term3",
+      "weight":0,
       "level": "master",
       "major": "CE"
     },
@@ -119,6 +124,7 @@
       "sessions_per_week": 2,
       "session_hours": 2,
       "term": "Term1",
+      "weight":0,
       "level": "master",
       "major": "CE"
     },
@@ -129,6 +135,7 @@
       "sessions_per_week": 1,
       "session_hours": 3,
       "term": "Term3",
+      "weight":0,
       "level": "master",
       "major": "CE"
     },
@@ -139,6 +146,7 @@
       "sessions_per_week": 1,
       "session_hours": 3,
       "term": "Term1",
+      "weight":0,
       "level": "master",
       "major": "CE"
     },
@@ -149,6 +157,7 @@
       "sessions_per_week": 1,
       "session_hours": 3,
       "term": "Term1",
+      "weight":0,
       "level": "master",
       "major": "CE"
     }

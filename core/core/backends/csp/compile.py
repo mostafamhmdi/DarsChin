@@ -14,8 +14,8 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass, field
 
-from ...preprocess import Problem
-from ...scoring import active_weights
+from ...preprocess import Problem, term_groups as get_term_groups   # alias: compile_problem has a local named term_groups
+from ...scoring import active_weights, lateness_units
 
 DISJOINT, DISTINCT_DAY, ORD_LT, ORD_GT = 1, 2, 4, 8
 
@@ -30,6 +30,7 @@ class CPl:
     key: int          # day*1440 + start  (symmetry ordering)
     penalty: int
     start: int
+    late: int         # lateness in its day, 30-min units (course_earliness)
 
 
 @dataclass
@@ -49,6 +50,8 @@ class CspModel:
     gap_units: dict[int, list[int]]
     soft_unit: list[int]
     cap_minutes: int | None
+    weight: list[int]          # per session: course.weight
+    term_of: list[int]         # per session: index of its term group, -1 = none
     days: list[int] = field(default_factory=list)
 
 
@@ -63,7 +66,8 @@ def compile_problem(p: Problem) -> CspModel:
             CPl(i, pl.day,
                 sum(1 << k for k in pl.slot_idxs),
                 sum(1 << p.slots[k].order for k in pl.slot_idxs),
-                pl.end - pl.start, pl.day * 1440 + pl.start, pl.penalty, pl.start)
+                pl.end - pl.start, pl.day * 1440 + pl.start, pl.penalty, pl.start,
+                lateness_units(p, pl))
             for i, pl in enumerate(p.placements[s.idx])])
 
     rel: dict[tuple[int, int], int] = defaultdict(int)
@@ -117,6 +121,9 @@ def compile_problem(p: Problem) -> CspModel:
 
     cap = int(cfg.max_teaching_hours_per_day * 60) if (cfg.max_teaching_hours_per_day
                                                        and "teacher_daily_load" not in off) else None
+    groups = get_term_groups(p)
+    term_idx = {term: i for i, term in enumerate(groups)}
+    course_term = {c: term_idx[t] for t, cs in groups.items() for c in cs}
     return CspModel(
         n=len(p.sessions), dom0=dom0,
         teacher=[p.courses[s.course_idx].teacher_idx for s in p.sessions],
@@ -127,4 +134,6 @@ def compile_problem(p: Problem) -> CspModel:
         soft_partners=dict(soft), teacher_prio=[t.priority for t in p.teachers], w=w,
         gap_units={d: [max(1, p.slots[i].minutes // 30) for i in idxs] for d, idxs in p.slots_by_day.items()},
         soft_unit=[max(1, s.minutes // 30) for s in p.slots], cap_minutes=cap,
+        weight=[p.courses[s.course_idx].weight for s in p.sessions],
+        term_of=[course_term.get(s.course_idx, -1) for s in p.sessions],
         days=sorted(p.slots_by_day))

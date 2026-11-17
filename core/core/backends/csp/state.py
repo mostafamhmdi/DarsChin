@@ -40,6 +40,7 @@ class CspState:
         self.tocc: dict[tuple[int, int], int] = defaultdict(int)
         self.cday: dict[tuple[int, int], int] = defaultdict(int)
         self.global_day: dict[int, int] = defaultdict(int)
+        self.term_day: dict[tuple[int, int], int] = defaultdict(int)   # (term, day) -> #sessions
         self.load: dict[tuple[int, int], int] = defaultdict(int)
         self.mono = 0
         self.gap = 0
@@ -68,6 +69,10 @@ class CspState:
         cost = w["slot_quality"] * prio * p.penalty
         if w.get("total_days") and self.global_day[d] == 0:  
             cost += w["total_days"]
+        if w["course_earliness"] and m.weight[s]:
+            cost += w["course_earliness"] * m.weight[s] * p.late
+        if w["term_days"] and m.term_of[s] >= 0 and self.term_day[(m.term_of[s], d)] == 0:
+            cost += w["term_days"]
         if self.tday[(t, d)] == 0:
             cost += w["teacher_days"] * prio
         if w["course_spread"] and len(m.sessions_of_course[c]) >= 2 and self.cday[(c, d)] == 0:
@@ -108,6 +113,8 @@ class CspState:
         self.tday[key] += 1
         self.cday[(c, d)] += 1
         self.global_day[d] += 1
+        if m.term_of[s] >= 0:
+            self.term_day[(m.term_of[s], d)] += 1
         self.load[key] += p.minutes
         self.asg[s] = p
         self.n_assigned += 1
@@ -148,6 +155,8 @@ class CspState:
         self.tday[key] -= 1
         self.cday[(c, d)] -= 1
         self.global_day[d] -= 1
+        if m.term_of[s] >= 0:
+            self.term_day[(m.term_of[s], d)] -= 1
         self.load[key] -= p.minutes
         self.asg[s] = None
         self.n_assigned -= 1

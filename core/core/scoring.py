@@ -11,6 +11,9 @@ objective modules of the engines:
     slot_quality          w * priority * slot penalty       per placed session
     soft_course_conflicts w * max(1, min//30)               per overlapping slot of a soft conflict
     total_days            w                                 per distinct active day in the whole schedule # اضافه شد
+    course_earliness      w * course.weight * lateness      per placed session; lateness = minutes after the day's first
+                                                            slot, in 30-min units (heavier course -> earlier)
+    term_days             w                                 per (term, day) on which the term has a class
 
 `active_weights` is shared with engines that need weights (CSP) so "disabled_modules" and
 "weight = 0" mean the same thing everywhere.
@@ -19,11 +22,12 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from .preprocess import Problem
+from .preprocess import Placement, Problem, term_groups
 from .evaluation import Resolved
 
 # total_days به لیست نام‌ها اضافه شد
-OBJECTIVE_NAMES = ("teacher_days", "teacher_gaps", "course_spread", "slot_quality", "soft_course_conflicts", "total_days")
+OBJECTIVE_NAMES = ("teacher_days", "teacher_gaps", "course_spread", "slot_quality", "soft_course_conflicts", "total_days",
+                   "course_earliness", "term_days")
 
 
 def active_weights(problem: Problem) -> dict[str, int]:
@@ -36,9 +40,17 @@ def active_weights(problem: Problem) -> dict[str, int]:
         "soft_course_conflicts": w.soft_conflict,
         # استفاده از getattr تا در صورت نبود فیلد در کلاس کانفیگ ارور ندهد
         "total_days": getattr(w, "total_days", 0), 
+        "course_earliness": w.course_earliness,
+        "term_days": w.term_days,
     }
     disabled = set(problem.config.disabled_modules)
     return {k: (0 if k in disabled else v) for k, v in raw.items()}
+
+
+def lateness_units(problem: Problem, pl: Placement) -> int:
+    """How late in ITS OWN day a placement starts, in 30-minute units (first slot of the day = 0)."""
+    first = problem.slots[problem.slots_by_day[pl.day][0]].start
+    return (pl.start - first) // 30
 
 
 def hole_units(slots_minutes: list[int], occupied_positions: set[int]) -> int:
@@ -73,6 +85,8 @@ def score(problem: Problem, resolved: Resolved) -> tuple[int, dict[str, int]]:
 
         if "slot_quality" in br:
             br["slot_quality"] += w["slot_quality"] * prio * pl.penalty
+        if "course_earliness" in br:
+            br["course_earliness"] += w["course_earliness"] * c.weight * lateness_units(problem, pl)
 
     for (t, day), positions in occ.items():
         prio = problem.teachers[t].priority
@@ -97,5 +111,11 @@ def score(problem: Problem, resolved: Resolved) -> tuple[int, dict[str, int]]:
     # اعمال جریمه کل روزهای درگیر در صورت فعال بودن
     if "total_days" in br:
         br["total_days"] += w["total_days"] * len(active_days)
+
+    if "term_days" in br:
+        for term, cidx in term_groups(problem).items():
+            cs = set(cidx)
+            days = {pl.day for sess, pl in resolved if sess.course_idx in cs}
+            br["term_days"] += w["term_days"] * len(days)
 
     return sum(br.values()), br

@@ -1,7 +1,8 @@
 """MILP soft objectives. Weights/semantics identical to scoring.py (verified by tests)."""
 from __future__ import annotations
 
-from ...scoring import active_weights
+from ...preprocess import term_groups
+from ...scoring import active_weights, lateness_units
 from .model import MilpContext
 
 
@@ -102,8 +103,28 @@ def total_days(ctx: MilpContext, w: int) -> None:
         ctx.penalty(w, used)
 
 
+def course_earliness(ctx: MilpContext, w: int) -> None:
+    """Linear in x: cost(placement) = w * course.weight * lateness. No auxiliary variables needed."""
+    p = ctx.problem
+    for s in p.sessions:
+        weight = p.courses[s.course_idx].weight
+        if weight:
+            for i, pl in enumerate(p.placements[s.idx]):
+                ctx.penalty(w * weight * lateness_units(p, pl), ctx.x[(s.idx, i)])
+
+
+def term_days(ctx: MilpContext, w: int) -> None:
+    """used[term, day] >= every x of that term on that day (lower-bound form: it has a positive cost)."""
+    p = ctx.problem
+    for term, course_idxs in term_groups(p).items():
+        sess = [s for c in course_idxs for s in p.sessions_of_course[c]]
+        for day in p.slots_by_day:
+            ctx.penalty(w, ctx.or_lower(ctx.lits_on_day(sess, day), f"term_{term}_d{day}"))
+
+
 ALL = {"teacher_days": teacher_days, "teacher_gaps": teacher_gaps, "course_spread": course_spread,
-       "slot_quality": slot_quality, "soft_course_conflicts": soft_course_conflicts, "total_days": total_days}
+       "slot_quality": slot_quality, "soft_course_conflicts": soft_course_conflicts, "total_days": total_days,
+       "course_earliness": course_earliness, "term_days": term_days}
 
 
 def apply_all(ctx: MilpContext) -> None:
