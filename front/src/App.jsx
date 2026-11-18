@@ -13,6 +13,7 @@ import { STATIC_DATA, cloneData, nextId } from './data/staticData.js'
 import { validatePayload } from './lib/validation.js'
 import { DEFAULT_ENDPOINT, describeError, endpointForMode, initialMode, submitSchedule } from './lib/api.js'
 import { fa } from './lib/format.js'
+import { useScheduleRuns } from './hooks/useScheduleRuns.js'
 
 const pairKey = (a, b) => [a, b].sort().join('::')
 
@@ -71,6 +72,9 @@ export default function App() {
   const validation = useMemo(() => validatePayload(payload), [payload])
   const effectiveEndpoint = useMemo(() => endpointForMode(mode, liveEndpoint), [mode, liveEndpoint])
   const activeMeta = NAV_ITEMS.find((item) => item.id === activeTab) || NAV_ITEMS[0]
+
+  // اجرای سه الگوریتم روی همین payload (نتایج و ویرایش‌ها با عوض‌کردن تب از بین نمی‌روند)
+  const schedule = useScheduleRuns({ payload, validation, endpoint: effectiveEndpoint, pushToast })
 
   const stats = {
     teachers: teachers.length,
@@ -314,6 +318,7 @@ export default function App() {
               validation={validation}
               onNavigate={navigate}
               lastResult={submitState}
+              schedule={schedule}
             />
           )}
           {activeTab === 'teachers' && (

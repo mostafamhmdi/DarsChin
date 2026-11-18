@@ -1,0 +1,132 @@
+/* ============================================================
+   نمای کلی: اجرای الگوریتم‌ها + برنامهٔ هفتگی قابل‌ویرایش
+   فقط کلاس‌های tt-* ؛ از متغیرهای :root در styles.css استفاده می‌کند.
+   ============================================================ */
+
+/* ---------- نوار اجرا ---------- */
+.tt-run-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.tt-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 11px; border-radius: 999px; font-size: 11.5px;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border); color: var(--text-soft);
+}
+.tt-chip b { color: #fff; }
+.tt-banner {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.08); color: var(--text-soft);
+}
+.tt-banner svg { color: var(--amber); flex: 0 0 auto; }
+.tt-banner--error { border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.08); }
+.tt-banner--error svg { color: var(--red); }
+.tt-banner p { margin: 0; flex: 1 1 240px; font-size: 12.5px; }
+
+/* ---------- کارت‌های سه الگوریتم ---------- */
+.tt-engines { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.tt-engine {
+  display: flex; flex-direction: column; gap: 10px; text-align: start; width: 100%;
+  padding: 16px; border-radius: var(--radius-md); font: inherit; color: var(--text);
+  border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; transition: 0.2s ease;
+}
+.tt-engine:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+.tt-engine.is-active {
+  border-color: rgba(139, 92, 246, 0.55);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.07));
+  box-shadow: 0 14px 40px rgba(109, 93, 252, 0.18);
+}
+.tt-engine__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tt-engine__name { font-size: 16px; font-weight: 800; letter-spacing: 0.3px; }
+.tt-engine__name small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.tt-engine__hint { margin: 0; font-size: 11px; color: var(--muted-2); }
+.tt-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tt-kpi { padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.045); border: 1px solid var(--border); }
+.tt-kpi small { display: block; font-size: 10.5px; color: var(--muted); }
+.tt-kpi strong { font-size: 14px; }
+.tt-kpi--bad strong { color: var(--red); }
+.tt-kpi--good strong { color: var(--green); }
+.tt-engine__note { font-size: 11.5px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
+.tt-engine__note svg { flex: 0 0 auto; margin-top: 3px; }
+
+/* ---------- کنترل نمایش ---------- */
+.tt-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.tt-seg { display: inline-flex; padding: 3px; gap: 3px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); }
+.tt-seg button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 9px; border: 0;
+  background: transparent; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer;
+}
+.tt-seg button.is-active { background: linear-gradient(135deg, rgba(139, 92, 246, 0.45), rgba(34, 211, 238, 0.2)); color: #fff; }
+.tt-boards { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+.tt-boards--all { grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr)); }
+
+/* ---------- برد برنامه ---------- */
+.tt-board__stats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tt-board__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.tt-help { margin: 0 0 10px; font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+.tt-help svg { flex: 0 0 auto; margin-top: 3px; color: var(--cyan); }
+
+.tt-scroll { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.02); }
+.tt-grid { display: grid; min-width: 620px; position: relative; }
+.tt-corner, .tt-dayhead, .tt-time {
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  font-size: 11.5px; color: var(--muted); background: rgba(255, 255, 255, 0.035);
+}
+.tt-corner { border-bottom: 1px solid var(--border); }
+.tt-dayhead { padding: 9px 4px; font-weight: 700; color: var(--text-soft); border-bottom: 1px solid var(--border); border-inline-start: 1px solid var(--border); }
+.tt-time { padding: 4px; border-top: 1px solid rgba(255, 255, 255, 0.05); line-height: 1.4; }
+.tt-time strong { color: var(--text-soft); font-size: 12px; }
+.tt-time small { font-size: 10px; color: var(--muted-2); }
+.tt-cell { border-top: 1px solid rgba(255, 255, 255, 0.05); border-inline-start: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.12s; }
+.tt-cell--none { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 6px, transparent 6px 12px); }
+.tt-grid.is-dragging .tt-cell.is-target { background: rgba(52, 211, 153, 0.13); box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.55); }
+.tt-grid.is-dragging .tt-cell.is-over { background: rgba(52, 211, 153, 0.3); }
+.tt-break {
+  display: flex; align-items: center; justify-content: center; font-size: 9.5px; letter-spacing: 0.5px;
+  color: var(--muted-2); background: rgba(255, 255, 255, 0.025); border-top: 1px dashed var(--border);
+}
+
+/* ---------- بلوک کلاس ---------- */
+.tt-grid.is-dragging .tt-block { pointer-events: none; }
+.tt-block {
+  position: relative; z-index: 2; margin: 3px; padding: 6px 8px; min-width: 0; overflow: hidden;
+  display: flex; flex-direction: column; gap: 1px; text-align: start; font: inherit; color: var(--text);
+  border-radius: 10px; border: 1px solid transparent; cursor: grab; transition: box-shadow 0.15s, transform 0.15s, opacity 0.15s;
+}
+.tt-block:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35); }
+.tt-block:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.tt-block.is-dragged { opacity: 0.35; }
+.tt-block__title { font-size: 12px; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
+.tt-block__meta, .tt-block__time { font-size: 10.5px; color: var(--text-soft); opacity: 0.85; line-height: 1.35; }
+.tt-block__warn { position: absolute; top: 5px; inset-inline-end: 5px; color: var(--red); }
+.tt-t0 { background: rgba(139, 92, 246, 0.24); border-color: rgba(139, 92, 246, 0.6); }
+.tt-t1 { background: rgba(34, 211, 238, 0.2); border-color: rgba(34, 211, 238, 0.55); }
+.tt-t2 { background: rgba(244, 114, 182, 0.22); border-color: rgba(244, 114, 182, 0.55); }
+.tt-t3 { background: rgba(251, 191, 36, 0.2); border-color: rgba(251, 191, 36, 0.5); }
+.tt-t4 { background: rgba(52, 211, 153, 0.2); border-color: rgba(52, 211, 153, 0.5); }
+.tt-t5 { background: rgba(251, 146, 60, 0.22); border-color: rgba(251, 146, 60, 0.55); }
+.tt-tn { background: rgba(152, 162, 194, 0.18); border-color: rgba(152, 162, 194, 0.45); }
+.tt-block--bad { border-color: var(--red); box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.4); }
+
+.tt-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 11.5px; color: var(--muted); }
+.tt-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.tt-legend i { width: 11px; height: 11px; border-radius: 4px; border: 1px solid; display: inline-block; }
+
+.tt-violations { margin: 14px 0 0; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.07); }
+.tt-violations h4 { margin: 0 0 6px; font-size: 12.5px; color: var(--red); display: flex; gap: 6px; align-items: center; }
+.tt-violations ul { margin: 0; padding-inline-start: 18px; font-size: 12px; color: var(--text-soft); }
+.tt-ok { margin: 14px 0 0; display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--green); }
+
+.tt-problem { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--text-soft); }
+.tt-problem ul { margin: 0; padding-inline-start: 18px; }
+.tt-problem code { direction: ltr; unicode-bidi: embed; font-family: var(--mono); font-size: 11.5px; color: var(--amber); }
+
+/* ---------- دیالوگ ویرایش ---------- */
+.tt-editor { display: flex; flex-direction: column; gap: 12px; margin: 10px 0 4px; }
+.tt-editor__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tt-editor__warn { margin: 0; padding: 10px 12px; border-radius: 10px; font-size: 12px; border: 1px solid rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.08); color: var(--text-soft); }
+.tt-editor__warn ul { margin: 4px 0 0; padding-inline-start: 18px; }
+.tt-editor__ok { margin: 0; font-size: 12px; color: var(--green); display: flex; gap: 6px; align-items: center; }
+
+@media (max-width: 720px) {
+  .tt-editor__row { grid-template-columns: 1fr; }
+  .tt-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

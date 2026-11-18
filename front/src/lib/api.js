@@ -1,8 +1,22 @@
+// ───────────────────────────────────────────────────────────────────────────
+// اتصال به core
+//
+//  مرورگر ──POST──►  /api/v1/schedule/solve   (همین origin فرانت)
+//                         │  پروکسیِ Vite (vite.config.js) مسیر /api را برمی‌دارد
+//                         ▼
+//                   core: POST http://127.0.0.1:8000/v1/schedule/solve
+//
+// چرا پروکسی؟ core هدرهای CORS ندارد؛ با پروکسی مرورگر فقط با origin خودش حرف می‌زند و
+// نیازی به تغییر در core نیست. برای آدرس مطلق (مثلاً سرور واقعی) متغیر VITE_API_URL را بدهید.
+// ───────────────────────────────────────────────────────────────────────────
 export const DEFAULT_ENDPOINT =
-  import.meta.env.VITE_API_URL?.trim() || 'http://localhost:8000/schedule'
+  import.meta.env.VITE_API_URL?.trim() || '/api/v1/schedule/solve'
 
 export const MOCK_ENDPOINT = '/__mock/schedule'
 export const REQUEST_TIMEOUT_MS = 30_000
+
+// وضعیت‌هایی که core در SolveResponse.status برمی‌گرداند
+const SOLVE_STATUSES = new Set(['OPTIMAL', 'FEASIBLE', 'INFEASIBLE', 'INVALID_INPUT', 'UNKNOWN'])
 
 export function isPreviewHost() {
   if (typeof window === 'undefined') return false
@@ -35,9 +49,52 @@ async function parseResponse(res) {
   }
 }
 
-export async function sendSchedule(payload, endpoint) {
+/** core خروجی حل را با status + assignments برمی‌گرداند (SolveResponse). */
+export function isSolveResponse(body) {
+  return Boolean(body) && typeof body === 'object' && SOLVE_STATUSES.has(body.status) && Array.isArray(body.assignments)
+}
+
+// FastAPI برای خطای اعتبارسنجی (۴۲۲) آرایه‌ای از {loc, msg} می‌دهد؛ آن را خوانا می‌کنیم.
+function formatDetail(detail) {
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => `${(item.loc || []).filter((part) => part !== 'body').join('.')}: ${item.msg}`)
+      .join(' | ')
+      .slice(0, 240)
+  }
+  return typeof detail === 'string' ? detail : ''
+}
+
+// پنل «محموله و ارسال» پاسخ را با summary/source نشان می‌دهد؛ پاسخ core را با همین شکل هم‌خوان می‌کنیم
+// (فیلدهای اصلی core دست‌نخورده می‌مانند).
+function normalizeCoreBody(body, payload) {
+  if (!isSolveResponse(body)) return body
+  return {
+    ok: body.status === 'OPTIMAL' || body.status === 'FEASIBLE',
+    source: 'core',
+    message: `وضعیت حل: ${body.status} · ${body.assignments.length} جلسه برنامه‌ریزی شد.`,
+    summary: {
+      teachers: payload?.teachers?.length ?? 0,
+      courses: payload?.courses?.length ?? 0,
+      slots: payload?.slots?.length ?? 0,
+      conflicts: payload?.conflicts?.length ?? 0,
+      config: payload?.config ?? null,
+    },
+    ...body,
+  }
+}
+
+// حلگر تا time_limit_sec کار می‌کند؛ مهلت مرورگر باید از آن بیشتر باشد وگرنه پاسخ قطع می‌شود.
+export function timeoutFor(payload) {
+  const limit = Number(payload?.config?.time_limit_sec) || 30
+  return Math.max(REQUEST_TIMEOUT_MS, (limit + 25) * 1000)
+}
+
+export async function sendSchedule(payload, endpoint, { signal, timeoutMs } = {}) {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), timeoutMs ?? timeoutFor(payload))
+  const forwardAbort = () => controller.abort()
+  signal?.addEventListener('abort', forwardAbort)
 
   try {
     const res = await fetch(endpoint, {
@@ -51,22 +108,39 @@ export async function sendSchedule(payload, endpoint) {
       signal: controller.signal,
     })
 
-    const body = await parseResponse(res)
+    const raw = await parseResponse(res)
 
     if (!res.ok) {
       const detail =
-        typeof body === 'string'
-          ? body.slice(0, 180)
-          : body?.message || body?.detail || `کد وضعیت ${res.status}`
+        typeof raw === 'string'
+          ? raw.slice(0, 180)
+          : raw?.message || formatDetail(raw?.detail) || `کد وضعیت ${res.status}`
       const error = new Error(`پاسخ بکاند ناموفق بود: ${detail}`)
       error.status = res.status
       throw error
     }
 
-    return { ok: true, status: res.status, endpoint, body }
+    return { ok: true, status: res.status, endpoint, body: normalizeCoreBody(raw, payload) }
   } finally {
     clearTimeout(timer)
+    signal?.removeEventListener('abort', forwardAbort)
   }
+}
+
+/**
+ * یک الگوریتم را روی همان محموله اجرا می‌کند: فقط config.engine عوض می‌شود
+ * (cpsat | milp | csp). خروجی = SolveResponse خامِ core.
+ */
+export async function solveWithEngine({ payload, engine, endpoint, signal }) {
+  const request = { ...payload, config: { ...payload.config, engine } }
+  const { body } = await sendSchedule(request, endpoint, { signal })
+  if (!isSolveResponse(body)) {
+    throw new Error(
+      'پاسخ دریافتی خروجی برنامه‌ریزی ندارد. آدرس باید به endpoint حلِ core (…/v1/schedule/solve) اشاره کند؛ ' +
+        'حالت «نمایشی» فقط ورودی را بازتاب می‌دهد.',
+    )
+  }
+  return body
 }
 
 export async function submitSchedule({ payload, endpoint, mode }) {
@@ -83,7 +157,7 @@ export async function submitSchedule({ payload, endpoint, mode }) {
         fallback: true,
         body: {
           ok: true,
-          message: 'شبیهسازی محلی: درخواست ساخته و آمادهٔ ارسال است.',
+          message: 'شبیه‌سازی محلی: درخواست ساخته و آمادهٔ ارسال است.',
           source: 'client-fallback',
           requestId: `demo_${Math.random().toString(36).slice(2, 10)}`,
           receivedAt: new Date().toISOString(),
@@ -103,10 +177,13 @@ export async function submitSchedule({ payload, endpoint, mode }) {
 
 export function describeError(error) {
   if (error?.name === 'AbortError') {
-    return `مهلت درخواست (${REQUEST_TIMEOUT_MS / 1000} ثانیه) به پایان رسید. بکاند پاسخی ارسال نکرد.`
+    return 'مهلت درخواست به پایان رسید یا درخواست لغو شد. اگر حلگر طولانی است time_limit_sec را بررسی کنید.'
+  }
+  if (error?.status === 502 || error?.status === 503 || error?.status === 504) {
+    return 'پروکسی نتوانست به core برسد. core را روی پورت ۸۰۰۰ اجرا کنید (یا CORE_URL را در .env تنظیم کنید).'
   }
   if (error instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(error?.message || '')) {
-    return 'امکان برقراری ارتباط با بکاند وجود ندارد. آدرس API، روشن بودن سرور و تنظیمات CORS را بررسی کنید.'
+    return 'امکان برقراری ارتباط با core وجود ندارد. روشن بودن سرور (uvicorn core.api:app --port 8000) و آدرس API را بررسی کنید.'
   }
   return error?.message || 'خطای ناشناخته در ارسال درخواست.'
 }

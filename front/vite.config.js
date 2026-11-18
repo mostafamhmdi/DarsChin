@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { randomUUID } from 'node:crypto'
 
@@ -94,18 +94,38 @@ function scheduleMockPlugin() {
   }
 }
 
-export default defineConfig({
-  plugins: [react(), scheduleMockPlugin()],
-  server: {
-    host: '0.0.0.0',
-    port: 5173,
-    cors: true,
-    allowedHosts: true,
-  },
-  preview: {
-    host: '0.0.0.0',
-    port: 4173,
-    cors: true,
-    allowedHosts: true,
-  },
+// مرورگر به /api/... می‌زند؛ Vite آن را به core می‌رساند: /api/v1/schedule/solve -> {CORE_URL}/v1/schedule/solve
+// (core هدر CORS ندارد؛ با پروکسی بدون هیچ تغییری در core کار می‌کند.)
+// آدرس core را با CORE_URL در فایل .env عوض کنید (پیش‌فرض http://127.0.0.1:8000).
+function coreProxy(coreUrl) {
+  return {
+    '/api': {
+      target: coreUrl,
+      changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/api/, ''),
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const proxy = coreProxy((env.CORE_URL || 'http://127.0.0.1:8000').replace(/\/$/, ''))
+
+  return {
+    plugins: [react(), scheduleMockPlugin()],
+    server: {
+      host: '0.0.0.0',
+      port: 5173,
+      cors: true,
+      allowedHosts: true,
+      proxy,
+    },
+    preview: {
+      host: '0.0.0.0',
+      port: 4173,
+      cors: true,
+      allowedHosts: true,
+      proxy,
+    },
+  }
 })
