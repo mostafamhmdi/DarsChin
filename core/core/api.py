@@ -32,3 +32,4 @@ def schema() -> dict:
 @app.post("/v1/schedule/solve", response_model=SolveResponse)
 def solve(req: SolveRequest) -> SolveResponse:   # sync def -> runs in FastAPI's threadpool
     return solve_schedule(req)
+
